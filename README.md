@@ -5,7 +5,7 @@ GO1 Neo4j Builder is the most advanced and flexible Neo4j Client for PHP.
 
 ## Install
 
-`composer require go1/neo4j-builder:dev-master`
+`composer require go1/neo4j-builder`
 
 ## Init class
 
