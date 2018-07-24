@@ -53,4 +53,15 @@ class ClauseTest extends TestCase
 
         $this->assertEquals("MATCH u.User WHERE u.id IN [1, 2, 3, 4, 5] AND u.mail = 'abc@go1.com' WITH collect(u.uid) AS rows1 MATCH u.User WHERE u.id IN [10, 11] WITH rows1 + collect(u.uid) AS rows UNWIND rows AS uid MATCH u.User {id: {uid}} RETURN u.id, u.mail SKIP 0 LIMIT 10", $query);
     }
+
+    public function testAddCypher()
+    {
+        $client = new Neo4jBuilder();
+
+        $query = $client->add('', "MATCH u.User WHERE u.id = {uid} RETURN u")
+            ->setParameter('uid', 10)
+            ->execute();
+
+        $this->assertEquals("MATCH u.User WHERE u.id = 10 RETURN u", $query);
+    }
 }

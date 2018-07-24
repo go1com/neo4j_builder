@@ -90,22 +90,6 @@ class Neo4jBuilder extends Client
         return $this->add(self::LIMIT, $limit);
     }
 
-    public function setParameter(string $name, $value)
-    {
-        $this->context[$name] = $value;
-
-        return $this;
-    }
-
-    public function setParameters(array $parameters)
-    {
-        foreach ($parameters as $name => $value) {
-            $this->setParameter($name, $value);
-        }
-
-        return $this;
-    }
-
     public function add(string $clause, string $cypher)
     {
         switch ($clause) {
@@ -125,6 +109,26 @@ class Neo4jBuilder extends Client
                 $this->cyphers[] = "AND {$cypher}";
                 break;
 
+            default:
+                $this->cyphers[] = $cypher;
+                break;
+
+        }
+
+        return $this;
+    }
+
+    public function setParameter(string $name, $value)
+    {
+        $this->context[$name] = $value;
+
+        return $this;
+    }
+
+    public function setParameters(array $parameters)
+    {
+        foreach ($parameters as $name => $value) {
+            $this->setParameter($name, $value);
         }
 
         return $this;
