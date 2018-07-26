@@ -2,7 +2,7 @@
 
 namespace go1\neo4j_builder;
 
-use \GraphAware\Neo4j\Client\Client;
+use GraphAware\Neo4j\Client\Client;
 use GraphAware\Neo4j\Client\Connection\ConnectionManager;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -125,13 +125,36 @@ class Neo4jBuilder extends Client
         return $this;
     }
 
-    public function setParameters(array $parameters)
+    public function setParameters(array $parameters, bool $reset = false)
     {
+        $reset && $this->resetContext();
+
         foreach ($parameters as $name => $value) {
             $this->setParameter($name, $value);
         }
 
         return $this;
+    }
+
+    public function setCyphers(array $cyphers, bool $reset = false)
+    {
+        $reset && $this->resetCyphers();
+
+        foreach ($cyphers as $query) {
+            $this->add('', $query);
+        }
+
+        return $this;
+    }
+
+    public function resetContext()
+    {
+        $this->context = [];
+    }
+
+    public function resetCyphers()
+    {
+        $this->cyphers = [];
     }
 
     public function getQuery(): string
