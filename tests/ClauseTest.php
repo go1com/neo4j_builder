@@ -22,8 +22,8 @@ class ClauseTest extends TestCase
             ->skip(0)
             ->limit(10)
             ->execute();
-
-        $this->assertEquals("MATCH u.User WHERE u.id = 10 AND u.mail = 'abc@go1.com' RETURN u.id, u.mail SKIP 0 LIMIT 10", $query);
+        $expected = "\nMATCH u.User \nWHERE (u.id = 10) AND (u.mail = 'abc@go1.com') \nRETURN u.id, u.mail \nSKIP 0 \nLIMIT 10";
+        $this->assertEquals($expected, $query);
     }
 
     public function testUnwindCase()
@@ -33,14 +33,14 @@ class ClauseTest extends TestCase
         $query = $client->match('u.User')
             ->where('u.id', 'ids', 'IN')
             ->andWhere('u.mail', 'mail')
-            ->with(['collect(u.uid)'],  'rows1')
+            ->with(['collect(u.uid) AS rows1'])
             ->setParameters([
                 'ids'   => [1, 2, 3, 4, 5],
                 'mail' => 'abc@go1.com'
             ])
             ->match('u.User')
             ->where('u.id', 'idsRows', 'IN')
-            ->with(['rows1 + collect(u.uid)'],  'rows')
+            ->with(['rows1 + collect(u.uid) AS rows'])
             ->setParameters([
                 'idsRows'   => [10, 11]
             ])
@@ -51,7 +51,7 @@ class ClauseTest extends TestCase
             ->limit(10)
             ->execute();
 
-        $this->assertEquals("MATCH u.User WHERE u.id IN [1, 2, 3, 4, 5] AND u.mail = 'abc@go1.com' WITH collect(u.uid) AS rows1 MATCH u.User WHERE u.id IN [10, 11] WITH rows1 + collect(u.uid) AS rows UNWIND rows AS uid MATCH u.User {id: {uid}} RETURN u.id, u.mail SKIP 0 LIMIT 10", $query);
+        $this->assertEquals("\nMATCH u.User \nWHERE (u.id IN [1, 2, 3, 4, 5]) AND (u.mail = 'abc@go1.com') \nWITH collect(u.uid) AS rows1 \nMATCH u.User \nWHERE (u.id IN [10, 11]) \nWITH rows1 + collect(u.uid) AS rows \nUNWIND rows AS uid \nMATCH u.User {id: {uid}} \nRETURN u.id, u.mail \nSKIP 0 \nLIMIT 10", $query);
     }
 
     public function testAddCypher()
@@ -63,5 +63,27 @@ class ClauseTest extends TestCase
             ->execute();
 
         $this->assertEquals("MATCH u.User WHERE u.id = 10 RETURN u", $query);
+    }
+
+    public function testCondition()
+    {
+        $client = new Neo4jBuilder();
+        $query = $client->match("u.User")
+            ->where('u.uid', 'uid')
+            ->andWhere(
+                Neo4jBuilder::orCondition([
+                    'u.mail = {mail1}',
+                    'u.mail = {mail2}',
+                ]))
+            ->setParameters([
+                'uid'   => 10,
+                'mail1' => 'mail1@example.com',
+                'mail2' => 'mail2@example.com',
+            ])
+            ->return(['u'])
+            ->execute();
+
+        $this->assertEquals("\nMATCH u.User \nWHERE (u.uid = 10) AND ((u.mail = 'mail1@example.com') OR (u.mail = 'mail2@example.com')) \nRETURN u", $query);
+
     }
 }

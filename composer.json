@@ -5,7 +5,7 @@
       "go1\\neo4j_builder\\": "./"
     }
   },
-  "requires": {
+  "require": {
     "graphaware/neo4j-php-client": "^4.6"
   },
   "license" : [

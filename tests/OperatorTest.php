@@ -17,7 +17,7 @@ class OperatorTest extends TestCase
             ->return(['u.id', 'u.mail'])
             ->execute();
 
-        $this->assertEquals("MATCH u.User WHERE u.id IN [1, 2, 3, 4] RETURN u.id, u.mail", $query);
+        $this->assertEquals("\nMATCH u.User \nWHERE (u.id IN [1, 2, 3, 4]) \nRETURN u.id, u.mail", $query);
     }
 
     public function testStringArray()
@@ -30,6 +30,6 @@ class OperatorTest extends TestCase
             ->return(['u.id', 'u.mail'])
             ->execute();
 
-        $this->assertEquals("MATCH u.User WHERE u.mail IN ['1@example.com', '2@example.com', '3@example.com'] RETURN u.id, u.mail", $query);
+        $this->assertEquals("\nMATCH u.User \nWHERE (u.mail IN ['1@example.com', '2@example.com', '3@example.com']) \nRETURN u.id, u.mail", $query);
     }
 }

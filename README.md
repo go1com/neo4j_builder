@@ -1,4 +1,4 @@
-GO1 Neo4j Query Builder for PHP
+GO1 Neo4j Query Builder for PHP [![Build Status](https://travis-ci.org/go1com/neo4j_builder.svg?branch=master)](https://travis-ci.org/go1com/neo4j_builder)
 ====
 
 GO1 Neo4j Builder is the most advanced and flexible Neo4j Client for PHP.

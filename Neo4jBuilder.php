@@ -12,6 +12,7 @@ class Neo4jBuilder extends Client
     const OPTIONAL_MATCH    = 'OPTIONAL MATCH';
     const WHERE             = 'WHERE';
     const AND_WHERE         = 'AND_WHERE';
+    const OR_WHERE          = 'OR_WHERE';
     const WITH              = 'WITH';
     const UNWIND            = 'UNWIND';
     const RETURN            = 'RETURN';
@@ -44,22 +45,27 @@ class Neo4jBuilder extends Client
         return $this->add(self::OPTIONAL_MATCH, $cypher);
     }
 
-    public function where(string $name, string $contextName, string $op = '=')
+    public function where(string $name, string $contextName = '', string $op = '=')
     {
-        $cypher = "{$name} {$op} {{$contextName}}";
+        $cypher = $contextName ? "({$name} {$op} {{$contextName}})" : $name;
         return $this->add(self::WHERE, $cypher);
     }
 
-    public function andWhere(string $name, string $contextName, string $op = '=')
+    public function andWhere(string $name, string $contextName = '', string $op = '=')
     {
-        $cypher = "{$name} {$op} {{$contextName}}";
+        $cypher = $contextName ? "({$name} {$op} {{$contextName}})" : $name;
         return $this->add(self::AND_WHERE, $cypher);
     }
 
-    public function with(array $variables, string $alias)
+    public function orWhere(string $name, string $contextName = '', string $op = '=')
     {
-        $cypher = implode(', ', $variables) . " AS {$alias}";
-        return $this->add(self::WITH, $cypher);
+        $cypher = $contextName ? "({$name} {$op} {{$contextName}})" : $name;
+        return $this->add(self::OR_WHERE, $cypher);
+    }
+
+    public function with(array $variables)
+    {
+        return $this->add(self::WITH, implode(', ', $variables));
     }
 
     public function unwind(string $names, string $name)
@@ -102,11 +108,15 @@ class Neo4jBuilder extends Client
             case self::ORDER_BY:
             case self::SKIP:
             case self::LIMIT:
-                $this->cyphers[] = "{$clause} {$cypher}";
+                $this->cyphers[] = "\n{$clause} {$cypher}";
                 break;
 
             case self::AND_WHERE:
                 $this->cyphers[] = "AND {$cypher}";
+                break;
+
+            case self::OR_WHERE:
+                $this->cyphers[] = "OR {$cypher}";
                 break;
 
             default:
@@ -206,5 +216,15 @@ class Neo4jBuilder extends Client
         }
 
         return $converted;
+    }
+
+    public static function orCondition(array $cyphers): string
+    {
+        return '((' . implode(') OR (', $cyphers) . '))';
+    }
+
+    public static function andCondition(array $cyphers): string
+    {
+        return '((' . implode(') AND (', $cyphers) . '))';
     }
 }
